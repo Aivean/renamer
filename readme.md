@@ -6,8 +6,8 @@ Rename batch of files as simple text lines.
 
  
  
-This script doesn't much functionality by itself, but instead it 
- allows you to leverage the power of your favorite text editor or IDE.
+This script doesn't provide much functionality by itself, but instead it
+leverages the power of your favorite text editor or IDE.
  
 
 Demo worth a thousand words
