@@ -23,7 +23,7 @@ Requirements
 Usage
 ---
 
-* Download the latest release
+* Download the [latest release](https://github.com/Aivean/renamer/releases/tag/0.0.1)
 * execute `java -jar path_to_renamer.jar` to rename files in current directory
 * follow the interactive instructions
 
