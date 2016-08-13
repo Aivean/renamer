@@ -12,29 +12,32 @@ import scala.util.{Failure, Success, Try}
   */
 object Main extends App {
 
+  val conf = ArgsParser.parser.parse(args, ArgsParser.Config()).getOrElse {
+    System.exit(1)
+    null // never happens
+  }
+
   val root = File.currentWorkingDirectory
 
-  val files = (args.toList match {
-    case glob :: _ =>
-      root.glob(glob)
+  val files = (conf.glob match {
+    case Some(glob) => root.glob(glob)
     case _ => root.list
-  }).filter(_.isRegularFile).toList
+  }).filter(_.isRegularFile).toList.sorted(conf.order)
 
-  println("Copy these files to your favourite editor:")
+  println("Copy these file names to your favourite text editor:")
   files.foreach(f => println(f.name))
 
   println("---------------------------")
 
   def uuid = java.util.UUID.randomUUID.toString
 
-
   def getNames: List[(File, String)] = {
     println("Paste the new names in the same order (one per line):")
-    val newNames = files.map(f => (f, StdIn.readLine()))
+    val newNames = files.map(f => (f, StdIn.readLine())).filter { case (f, n) => f.name != n }
 
     Option(newNames.map(_._2).groupBy(identity).filter(_._2.size > 1).keys).filter(_.nonEmpty) match {
       case Some(dups) =>
-        System.err.println("Duplicate names: " + dups.mkString(", "))
+        System.err.println("Error! Duplicate names found: " + dups.mkString(", "))
         getNames
 
       case _ =>
@@ -44,7 +47,7 @@ object Main extends App {
         newNames.map {
           case (f, name) =>
             def trunc(f: File) = f.pathAsString.drop(root.pathAsString.length)
-            (trunc(f),  trunc(f.parent / name))
+            (trunc(f), trunc(f.parent / name))
         } match {
           case pairs if pairs.nonEmpty =>
             val maxW = pairs.map(_._1.length).max
@@ -52,7 +55,7 @@ object Main extends App {
               case (oldf, newf) =>
                 print(oldf)
                 print(" " * ((maxW - oldf.length) max 0))
-                println(s" -> $newf")
+                println(s" ${conf.arrow} $newf")
             }
           case _ =>
         }
@@ -98,7 +101,7 @@ object Main extends App {
 
       Option(errors).filter(_.nonEmpty).foreach {
         fs =>
-          System.err.println("\nErrors during file renaming:")
+          System.err.println("\nErrors during file renaming:\n")
           fs.foreach(e => System.err.println(e.getMessage))
       }
   }
